@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15.1-alpine
+    restart: always
+    container_name: postgres
+    environment:
+      - POSTGRES_DB="УКАЗАТЬ"
+      - POSTGRES_USER="УКАЗАТЬ"
+      - POSTGRES_PASSWORD="УКАЗАТЬ"
+    ports:
+      - "5432:5432"
+    volumes:
+      - prod-data:/var/lib/postgresql/data
+  
+  api:
+    build: 
+      context: ./api/
+      dockerfile: Dockerfile
+    container_name: travel-agent-api
+    environment:
+      - SERVER_ADDRESS="УКАЗАТЬ"
+      - POSTGRES_CONN="УКАЗАТЬ"
+
+      - GEOAPIFY_URL=https://api.geoapify.com/v1/routing
+      - GEOAPIFY_TOKEN="УКАЗАТЬ"
+
+      - TRAVELPAYOUTS_URL=https://engine.hotellook.com/api/v2/cache.json
+
+      - WEATHERAPI_URL=http://api.weatherapi.com/v1/
+      - WEATHERAPI_TOKEN="УКАЗАТЬ"
+
+      - FOURSQUARE_URL_PLACES=https://api.foursquare.com/v3/places/search
+      - FOURSQUARE_TOKEN="УКАЗАТЬ"
+      - FOURSQUARE_RESTAURANT_CATEGORY="УКАЗАТЬ"
+      - FOURSQUARE_URL_VENUES=https://api.foursquare.com/v2/venues/search
+      - FOURSQUARE_VERSION_VENUES="УКАЗАТЬ"
+      - FOURSQUARE_USERID="УКАЗАТЬ"
+      - FOURSQUARE_ACCESS_TOKEN="УКАЗАТЬ"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    volumes:
+      - api-data:/var/lib/prod-api/data
+  
+  bot:
+    build:
+      context: ./bot/
+      dockerfile: Dockerfile
+    container_name: travel-agent-bot
+    environment:
+      - API_URL=http://api:8080/api
+      - TOKEN="УКАЗАТЬ"
+    depends_on:
+      - api
+
+volumes:
+  prod-data:
+  api-data:
